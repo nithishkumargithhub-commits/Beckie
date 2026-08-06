@@ -111,6 +111,30 @@ class JarvisOrchestrator:
             self.state_machine.transition_to(StateEnum.IDLE, reason="Reset after error")
 
 
+_default_classifier = None
+_default_executor = None
+
+def _process_command_inner(command_text: str, stream=None, speak=None):
+    """
+    Core functional processor for textual or web/API commands.
+    Classifies intent and dispatches to ActionExecutor.
+    """
+    global _default_classifier, _default_executor
+    if _default_classifier is None:
+        _default_classifier = IntentClassifier()
+    if _default_executor is None:
+        _default_executor = ActionExecutor()
+
+    logger.info(f"Processing command inner: '{command_text}'")
+    analysis = _default_classifier.classify(command_text)
+    response_text = _default_executor.execute(analysis)
+
+    if speak and callable(speak):
+        speak(response_text)
+
+    return True, analysis.intent.value
+
+
 def main():
     orchestrator = JarvisOrchestrator()
     orchestrator.start()
@@ -118,3 +142,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
