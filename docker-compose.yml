@@ -1,0 +1,33 @@
+services:
+  jarvis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jarvis-assistant
+    ports:
+      - "54321:54321"
+    environment:
+      # Run in headless mode by default inside Docker to avoid X11 DISPLAY errors.
+      # Set to "false" and configure DISPLAY if you setup X11 forwarding on Windows.
+      - HEADLESS=true
+      # Map the API key from host environment variables
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - WAKE_WORD=${WAKE_WORD}
+      - WAKE_WORD_THRESHOLD=${WAKE_WORD_THRESHOLD}
+      - MIC_GAIN=${MIC_GAIN}
+      - WHISPER_MODEL=${WHISPER_MODEL}
+      - WHISPER_DEVICE=${WHISPER_DEVICE}
+      - WHISPER_COMPUTE_TYPE=${WHISPER_COMPUTE_TYPE}
+      - WHISPER_LANGUAGE=${WHISPER_LANGUAGE}
+      - ENABLE_WEB_SONGS=${ENABLE_WEB_SONGS}
+      - CHROME_DEFAULT_EMAIL=${CHROME_DEFAULT_EMAIL}
+    volumes:
+      # Persist local database and configurations on the host
+      - ./jarvis.db:/app/jarvis.db
+      - ./todo_list.json:/app/todo_list.json
+      - ./assistant.log:/app/assistant.log
+      - ./.env:/app/.env
+    devices:
+      # Pass ALSA sound cards (Microphone/Speaker) into the container
+      - "/dev/snd:/dev/snd"
+    restart: unless-stopped

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jarvis AI Mobile & Web Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="background-glob glob-1"></div>
+    <div class="background-glob glob-2"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header glass-card">
+            <div class="brand">
+                <div class="status-dot online" id="server-status-dot"></div>
+                <div class="brand-text">
+                    <h1>JARVIS</h1>
+                    <span class="subtitle">AI Voice & Mobile Assistant</span>
+                </div>
+            </div>
+            <div class="header-badges">
+                <span class="badge" id="google-sync-badge">Calendar Connected</span>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Content -->
+        <main class="dashboard-grid">
+            <!-- Voice Core Controller Card -->
+            <section class="glass-card voice-card">
+                <div class="orb-container">
+                    <button class="voice-orb" id="mic-btn" aria-label="Microphone">
+                        <div class="orb-ring ring-1"></div>
+                        <div class="orb-ring ring-2"></div>
+                        <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="22"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="voice-status">
+                    <p id="voice-status-text">Tap mic or type command below</p>
+                </div>
+
+                <!-- Text Command Input Bar -->
+                <form id="command-form" class="command-bar">
+                    <input type="text" id="command-input" placeholder="Ask Jarvis anything..." autocomplete="off">
+                    <button type="submit" id="send-btn" aria-label="Send Command">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Activity Log Card -->
+            <section class="glass-card activity-card">
+                <div class="card-header">
+                    <h2>Conversation History</h2>
+                    <button class="icon-btn" id="clear-log-btn" title="Clear log">Clear</button>
+                </div>
+                <div class="chat-container" id="chat-container">
+                    <div class="chat-bubble assistant-bubble">
+                        <p>Hello! I am Jarvis. How can I assist you today?</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Upcoming Reminders Card -->
+            <section class="glass-card reminders-card">
+                <div class="card-header">
+                    <h2>Reminders & Calendar</h2>
+                    <button class="icon-btn" id="refresh-reminders-btn" title="Refresh">Refresh</button>
+                </div>
+                <div class="reminders-list" id="reminders-list">
+                    <div class="loading-spinner">Loading reminders...</div>
+                </div>
+            </section>
+
+            <!-- System Metrics Card -->
+            <section class="glass-card metrics-card">
+                <div class="card-header">
+                    <h2>System Metrics</h2>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <span class="metric-label">CPU Usage</span>
+                        <span class="metric-value" id="cpu-value">--%</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-label">Memory</span>
+                        <span class="metric-value" id="ram-value">--%</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-label">Server</span>
+                        <span class="metric-value" id="uptime-value">Active</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
