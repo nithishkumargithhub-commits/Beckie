@@ -1,6 +1,11 @@
 import sys
-import asyncio
 import os
+
+_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _BASE_DIR not in sys.path:
+    sys.path.insert(0, _BASE_DIR)
+
+import asyncio
 import tempfile
 import subprocess
 import pyttsx3
@@ -8,6 +13,7 @@ import logging
 import queue
 import threading
 import config
+
 
 logger = logging.getLogger("VoiceAssistant.Speaker")
 

@@ -1,4 +1,10 @@
 import os
+import sys
+
+_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _BASE_DIR not in sys.path:
+    sys.path.insert(0, _BASE_DIR)
+
 import logging
 import re
 from enum import Enum
@@ -6,6 +12,7 @@ from typing import Dict, Any, Optional
 from pydantic import BaseModel, Field
 from google import genai
 import config
+
 
 logger = logging.getLogger("VoiceAssistant.Classifier")
 

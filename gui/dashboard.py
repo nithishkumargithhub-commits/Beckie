@@ -1,5 +1,11 @@
 import os
 import sys
+
+# Ensure project root is in sys.path when executed directly
+_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _BASE_DIR not in sys.path:
+    sys.path.insert(0, _BASE_DIR)
+
 import queue
 import logging
 import threading
@@ -8,6 +14,7 @@ import customtkinter as ctk
 import pystray
 from PIL import Image, ImageDraw
 import config
+
 
 try:
     import win32com.client
