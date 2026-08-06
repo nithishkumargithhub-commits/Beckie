@@ -4,7 +4,9 @@ Refactored Structured Intent Classifier for JARVIS Voice Assistant.
 
 import os
 import re
+import config
 from enum import Enum
+
 from typing import Dict, Any, Optional
 from pydantic import BaseModel, Field
 from google import genai

@@ -6,7 +6,9 @@ Integrates StateMachine, WakeWord, STT, NLU Intent Classification, ActionExecuto
 import sys
 import time
 import threading
+import config
 from logger import get_logger
+
 from exceptions import JarvisException
 from core.state_machine import StateMachine, StateEnum
 from core.intent_classifier import IntentClassifier
