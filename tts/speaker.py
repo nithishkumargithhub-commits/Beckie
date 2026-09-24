@@ -126,6 +126,52 @@ class Speaker:
                     pass
         return False
 
+    def _speak_piper_tts(self, text: str) -> bool:
+        """
+        Attempts to synthesize speech using Piper offline neural TTS.
+        """
+        try:
+            from piper.voice import PiperVoice
+            import wave
+            model_path = getattr(config, "PIPER_MODEL_PATH", os.path.join(config.BASE_DIR, "en_US-lessac-medium.onnx"))
+            if not os.path.exists(model_path):
+                return False
+            
+            if not hasattr(self, "_piper_voice") or self._piper_voice is None:
+                self._piper_voice = PiperVoice.load(model_path)
+
+            tmp_wav = None
+            try:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
+                    tmp_wav = f.name
+                
+                with wave.open(tmp_wav, "wb") as wav_file:
+                    self._piper_voice.synthesize_wav(text, wav_file)
+
+                if self.stop_requested:
+                    return True
+
+                if os.path.exists(tmp_wav) and os.path.getsize(tmp_wav) > 0:
+                    if sys.platform == "win32":
+                        import ctypes
+                        import time
+                        alias = f"jarvis_piper_{int(time.time()*1000)}"
+                        self.current_mci_alias = alias
+                        ctypes.windll.winmm.mciSendStringW(f'open "{tmp_wav}" type waveaudio alias {alias}', None, 0, 0)
+                        ctypes.windll.winmm.mciSendStringW(f'play {alias} wait', None, 0, 0)
+                        ctypes.windll.winmm.mciSendStringW(f'close {alias}', None, 0, 0)
+                        self.current_mci_alias = None
+                        return True
+            finally:
+                if tmp_wav and os.path.exists(tmp_wav):
+                    try:
+                        os.remove(tmp_wav)
+                    except Exception:
+                        pass
+        except Exception as e:
+            logger.warning(f"Piper TTS synthesis failed: {e}")
+        return False
+
     def _speak_worker(self):
         """
         Runs inside a dedicated background thread. Initializing pyttsx3 here
@@ -155,7 +201,11 @@ class Speaker:
                 # 1. Attempt Neural Edge-TTS
                 success = self._speak_edge_tts(text)
                 
-                # 2. Fallback to pyttsx3
+                # 2. Attempt Offline Neural Piper-TTS
+                if not success and not self.stop_requested:
+                    success = self._speak_piper_tts(text)
+
+                # 3. Fallback to pyttsx3
                 if not success and engine and not self.stop_requested:
                     engine.say(text)
                     engine.runAndWait()

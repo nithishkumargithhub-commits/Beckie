@@ -32,12 +32,27 @@ def query_local_llm(prompt: str) -> Tuple[bool, str]:
         if not models:
             return False, "Ollama is running, but no models are installed. Please run 'ollama run llama3.2' or 'ollama run gemma2' to download a model."
             
-        # 2. Select the best model (preferring llama or gemma)
-        selected_model = models[0]
-        for model in models:
-            if "llama" in model.lower() or "gemma" in model.lower():
-                selected_model = model
-                break
+        # 2. Select the best model (respecting LOCAL_LLM_MODEL, or preferring qwen, llama, gemma)
+        import os
+        configured_model = os.getenv("LOCAL_LLM_MODEL", "").strip()
+        selected_model = None
+        if configured_model:
+            for model in models:
+                if configured_model.lower() in model.lower():
+                    selected_model = model
+                    break
+
+        if not selected_model:
+            for priority in ["qwen3", "qwen", "llama", "gemma"]:
+                for model in models:
+                    if priority in model.lower():
+                        selected_model = model
+                        break
+                if selected_model:
+                    break
+
+        if not selected_model:
+            selected_model = models[0]
                 
         logger.info(f"Selected local model for query: '{selected_model}'")
         

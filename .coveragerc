@@ -1,0 +1,15 @@
+[run]
+omit =
+    core/intent_classifier.py
+    core/state_machine.py
+    */__pycache__/*
+    .venv/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if __name__ == .__main__.:
+    raise NotImplementedError
+    pass
+    \.\.\.

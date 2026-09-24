@@ -43,6 +43,8 @@ logs/
 *.wav
 *.mp3
 *.m4a
+*.onnx
+*.onnx.json
 
 # IDE & Editor files
 .vscode/

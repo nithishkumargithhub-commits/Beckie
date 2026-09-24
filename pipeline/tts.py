@@ -102,7 +102,44 @@ class TextToSpeech:
             return
 
         except Exception as e:
-            logger.warning(f"Edge TTS generation/playback failed: {e}. Falling back to pyttsx3...")
+            logger.warning(f"Edge TTS generation/playback failed: {e}. Falling back to Piper TTS / pyttsx3...")
+
+        # Secondary Attempt: Piper Neural TTS (Fast Offline)
+        try:
+            from piper.voice import PiperVoice
+            import wave
+            import pygame
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            model_path = os.path.join(base_dir, "en_US-lessac-medium.onnx")
+            if os.path.exists(model_path):
+                if not hasattr(self, "_piper_voice") or self._piper_voice is None:
+                    self._piper_voice = PiperVoice.load(model_path)
+
+                tmp_wav = tempfile.NamedTemporaryFile(suffix=".wav", delete=False).name
+                with wave.open(tmp_wav, "wb") as wav_file:
+                    self._piper_voice.synthesize_wav(text, wav_file)
+
+                if self._stop_event.is_set():
+                    if os.path.exists(tmp_wav):
+                        os.remove(tmp_wav)
+                    return
+
+                pygame.mixer.init()
+                pygame.mixer.music.load(tmp_wav)
+                pygame.mixer.music.play()
+
+                while pygame.mixer.music.get_busy():
+                    if self._stop_event.is_set():
+                        pygame.mixer.music.stop()
+                        break
+                    pygame.time.Clock().tick(10)
+
+                pygame.mixer.quit()
+                if os.path.exists(tmp_wav):
+                    os.remove(tmp_wav)
+                return
+        except Exception as piper_err:
+            logger.warning(f"Piper TTS fallback failed: {piper_err}. Falling back to pyttsx3...")
 
         # Fallback Attempt: pyttsx3 (SAPI5 offline)
         try:
