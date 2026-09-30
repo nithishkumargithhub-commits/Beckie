@@ -28,9 +28,25 @@ ENV/
 env.bak/
 venv.bak/
 
-# Environment variables & secrets
+# Environment variables & secrets (STRICT NO-LEAK POLICY)
 .env
-.env.local
+.env.*
+*.env
+credentials.json
+token.json
+tokens.json
+spotify_tokens.json
+spotify_preferences.json
+auth_url.txt
+*credential*.json
+*token*.json
+*secret*.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.cert
+*.crt
 
 # Database & logs
 *.db
@@ -38,26 +54,53 @@ venv.bak/
 *.log
 assistant.log
 logs/
+data/
 
-# Audio / Media / Temp test files
+# Audio / Media / AI Models
 *.wav
 *.mp3
 *.m4a
 *.onnx
 *.onnx.json
 
-# IDE & Editor files
+# 3D Avatar Models & Large Binary Assets (>100MB GitHub limit)
+*.glb
+*.gltf
+*.fbx
+*.obj
+*.bin
+corrupted-archangel-six-wings-boss/
+/assets/avatars/beckie/source/*
+!/assets/avatars/beckie/source/.gitkeep
+/assets/avatars/beckie/generated/*
+!/assets/avatars/beckie/generated/.gitkeep
+!/assets/avatars/beckie/generated/conversion-report.json
+frontend/public/avatar/
+
+# Node & Frontend Build Artifacts
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist/
+
+# Rust & Tauri Builds
+src-tauri/target/
+target/
+
+# IDE, OS, Caches, Scratch
 .vscode/
 .idea/
 .cursor/
 *.swp
-
-# Testing & Caches
 .pytest_cache/
 .coverage
 htmlcov/
-
-# OS specific
+.cache
+.cache/
+.cache*
+scratch/
+test-results/
+frontend/test-results/
 Thumbs.db
 Desktop.ini
 .DS_Store

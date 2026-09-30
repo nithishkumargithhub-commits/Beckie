@@ -200,6 +200,7 @@ class OllamaAdapter:
         temperature: float = 0.7,
         max_tokens: int = 1024,
         stream: bool = False,
+        timeout: Optional[float] = None,
     ) -> ChatCompletion | Iterator[str]:
         """
         Send a chat request.  Returns a ChatCompletion for non-streaming,
@@ -218,14 +219,37 @@ class OllamaAdapter:
 
         if stream:
             return self._stream_chat(payload, model)
-        return self._blocking_chat(payload, model)
+        return self._blocking_chat(payload, model, timeout=timeout)
+
+    def create_chat_completion(
+        self,
+        messages: list[ChatMessage],
+        model: Optional[str] = None,
+        temperature: float = 0.7,
+        max_tokens: int = 1024,
+        stream: bool = False,
+        timeout: Optional[float] = None,
+    ) -> ChatCompletion | Iterator[str]:
+        """OpenAI-compatible alias for chat()."""
+        return self.chat(
+            messages=messages,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            stream=stream,
+            timeout=timeout,
+        )
 
     def _blocking_chat(
-        self, payload: dict[str, Any], model: str
+        self,
+        payload: dict[str, Any],
+        model: str,
+        timeout: Optional[float] = None,
     ) -> ChatCompletion:
         start = time.monotonic()
         try:
-            resp = self._client.post("/api/chat", json=payload)
+            req_timeout = timeout if timeout is not None else self._timeout
+            resp = self._client.post("/api/chat", json=payload, timeout=req_timeout)
             resp.raise_for_status()
         except httpx.HTTPStatusError as exc:
             logger.error("Ollama HTTP error: %s", exc.response.text)

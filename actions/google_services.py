@@ -13,13 +13,20 @@ import config
 
 logger = logging.getLogger("VoiceAssistant.GoogleServices")
 
-# Unified OAuth Scopes for Calendar, Tasks, and Gmail
-ALL_SCOPES = [
+# Scopes definition
+CALENDAR_TASKS_SCOPES = [
     'https://www.googleapis.com/auth/calendar.events',
     'https://www.googleapis.com/auth/tasks',
-    'https://www.googleapis.com/auth/gmail.readonly',
-    'https://www.googleapis.com/auth/gmail.send'
 ]
+
+SERVICE_SCOPES = {
+    'calendar': ['https://www.googleapis.com/auth/calendar.events'],
+    'tasks': ['https://www.googleapis.com/auth/tasks'],
+    'gmail': ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.send']
+}
+
+# Unified OAuth Scopes for Calendar, Tasks, and Gmail
+ALL_SCOPES = CALENDAR_TASKS_SCOPES + SERVICE_SCOPES['gmail']
 
 CREDENTIALS_PATH = os.path.join(config.BASE_DIR, "credentials.json")
 TOKEN_PATH = os.path.join(config.BASE_DIR, "token.json")
@@ -36,22 +43,25 @@ def get_google_service(service_name: str, version: str) -> Tuple[Optional[object
         logger.warning(msg)
         return None, msg
 
+    req_scopes = SERVICE_SCOPES.get(service_name.lower(), CALENDAR_TASKS_SCOPES)
     creds = None
     if os.path.exists(TOKEN_PATH):
         try:
-            creds = Credentials.from_authorized_user_file(TOKEN_PATH, ALL_SCOPES)
-            logger.info("Loaded credentials from token.json")
+            creds = Credentials.from_authorized_user_file(TOKEN_PATH, req_scopes)
+            logger.info(f"Loaded credentials from token.json for {service_name}")
         except Exception as e:
-            logger.error(f"Error reading token.json: {e}")
+            logger.warning(f"Error reading token.json for {service_name}: {e}")
 
     try:
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
-                logger.info("Credentials expired. Refreshing OAuth token...")
+                logger.info(f"Credentials expired for {service_name}. Refreshing OAuth token...")
                 creds.refresh(Request())
             else:
                 logger.info(f"Initializing OAuth login flow for Google {service_name}...")
-                flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, ALL_SCOPES)
+                # Request Calendar & Tasks by default to avoid failing if Gmail API isn't enabled
+                flow_scopes = SERVICE_SCOPES['gmail'] if service_name.lower() == 'gmail' else CALENDAR_TASKS_SCOPES
+                flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, flow_scopes)
                 creds = flow.run_local_server(port=0)
 
             with open(TOKEN_PATH, 'w') as token_file:
@@ -218,3 +228,185 @@ def send_email(to_address: str, subject: str, body: str) -> Tuple[bool, str]:
         msg = f"Failed to send email via Gmail API: {e}"
         logger.error(msg)
         return False, msg
+
+
+# ==========================================
+# GOOGLE CALENDAR WRAPPERS
+# ==========================================
+
+def add_calendar_event(title: str, datetime_str: Optional[str] = None) -> Tuple[bool, str]:
+    """Schedules an event on Google Calendar and local DB."""
+    from actions.reminders import create_calendar_reminder
+    return create_calendar_reminder(title, datetime_str)
+
+
+def list_calendar_events(max_results: int = 5) -> Tuple[bool, str]:
+    """Lists upcoming events from Google Calendar."""
+    from actions.reminders import list_calendar_reminders
+    return list_calendar_reminders(max_results)
+
+
+def get_structured_calendar_events(max_results: int = 10) -> List[Dict]:
+    """Returns structured calendar events for HUD visualization."""
+    service, err = get_google_service('calendar', 'v3')
+    if not service:
+        logger.warning(f"Calendar service unavailable: {err}")
+        return []
+
+    try:
+        import datetime
+        now_iso = datetime.datetime.now().astimezone().isoformat()
+        events_result = service.events().list(
+            calendarId='primary',
+            timeMin=now_iso,
+            maxResults=max_results,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
+
+        raw_events = events_result.get('items', [])
+        structured = []
+        for ev in raw_events:
+            start_val = ev.get('start', {}).get('dateTime', ev.get('start', {}).get('date', ''))
+            end_val = ev.get('end', {}).get('dateTime', ev.get('end', {}).get('date', ''))
+            structured.append({
+                "id": ev.get("id"),
+                "summary": ev.get("summary", "Untitled Event"),
+                "start": start_val,
+                "end": end_val,
+                "location": ev.get("location", ""),
+                "htmlLink": ev.get("htmlLink", "")
+            })
+        return structured
+    except Exception as e:
+        logger.error(f"Error fetching structured calendar events: {e}")
+        return []
+
+
+def get_week_agenda(days: int = 7) -> List[Dict]:
+    """
+    Returns structured 7-day agenda from Google Calendar for the 3D Week Dashboard.
+    Guarantees 7 consecutive day buckets starting from today, with associated events.
+    """
+    import datetime
+    now = datetime.datetime.now().astimezone()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Pre-populate 7 days
+    agenda = []
+    day_map = {}
+    for i in range(days):
+        day_date = today_start + datetime.timedelta(days=i)
+        d_key = day_date.strftime("%Y-%m-%d")
+        day_obj = {
+            "date": d_key,
+            "day_name": day_date.strftime("%A"),
+            "day_short": day_date.strftime("%a").upper(),
+            "day_num": day_date.strftime("%d"),
+            "month_short": day_date.strftime("%b").upper(),
+            "display_date": day_date.strftime("%b %d").upper(),
+            "is_today": (i == 0),
+            "events": []
+        }
+        agenda.append(day_obj)
+        day_map[d_key] = day_obj
+        
+    service, err = get_google_service('calendar', 'v3')
+    if not service:
+        logger.warning(f"Calendar service unavailable for week agenda: {err}")
+        return agenda
+
+    try:
+        end_window = today_start + datetime.timedelta(days=days)
+        events_result = service.events().list(
+            calendarId='primary',
+            timeMin=today_start.isoformat(),
+            timeMax=end_window.isoformat(),
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
+
+        raw_events = events_result.get('items', [])
+        for ev in raw_events:
+            start_raw = ev.get('start', {})
+            start_val = start_raw.get('dateTime', start_raw.get('date', ''))
+            end_raw = ev.get('end', {})
+            end_val = end_raw.get('dateTime', end_raw.get('date', ''))
+
+            # Parse start time and date
+            time_str = "All Day"
+            event_date_key = ""
+            if 'T' in start_val:
+                try:
+                    dt = datetime.datetime.fromisoformat(start_val.replace('Z', '+00:00'))
+                    local_dt = dt.astimezone()
+                    event_date_key = local_dt.strftime("%Y-%m-%d")
+                    time_str = local_dt.strftime("%I:%M %p")
+                except Exception:
+                    event_date_key = start_val.split('T')[0]
+            else:
+                event_date_key = start_val
+
+            event_entry = {
+                "id": ev.get("id"),
+                "summary": ev.get("summary", "Untitled Event"),
+                "start": start_val,
+                "end": end_val,
+                "time_str": time_str,
+                "location": ev.get("location", ""),
+                "htmlLink": ev.get("htmlLink", "")
+            }
+
+            if event_date_key in day_map:
+                day_map[event_date_key]["events"].append(event_entry)
+
+    except Exception as e:
+        logger.error(f"Error fetching week agenda events: {e}")
+
+    return agenda
+
+
+
+def get_structured_tasks(max_results: int = 20) -> List[Dict]:
+    """Returns structured Google Tasks for HUD checklist."""
+    service, err = get_google_service('tasks', 'v1')
+    if not service:
+        logger.warning(f"Tasks service unavailable: {err}")
+        return []
+
+    try:
+        results = service.tasks().list(tasklist='@default', maxResults=max_results, showCompleted=True).execute()
+        items = results.get('items', [])
+        return [
+            {
+                "id": t.get("id"),
+                "title": t.get("title", "Untitled Task"),
+                "notes": t.get("notes", ""),
+                "status": t.get("status", "needsAction"),
+                "completed": t.get("status") == "completed",
+                "due": t.get("due", "")
+            }
+            for t in items
+        ]
+    except Exception as e:
+        logger.error(f"Error fetching structured tasks: {e}")
+        return []
+
+
+def set_task_completed(task_id: str, completed: bool = True) -> Tuple[bool, str]:
+    """Toggles task status by task ID."""
+    service, err = get_google_service('tasks', 'v1')
+    if not service:
+        return False, f"Could not connect to Google Tasks: {err}"
+
+    try:
+        new_status = 'completed' if completed else 'needsAction'
+        patch_body = {'status': new_status}
+        if not completed:
+            patch_body['completed'] = None
+        service.tasks().patch(tasklist='@default', task=task_id, body=patch_body).execute()
+        return True, f"Task status updated to {new_status}."
+    except Exception as e:
+        return False, f"Failed to update task: {e}"
+
+

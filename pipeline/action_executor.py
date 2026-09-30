@@ -72,43 +72,45 @@ class ActionExecutor:
 
     def _handle_volume(self, analysis: IntentAnalysis) -> str:
         try:
-            from actions.media_control import set_system_volume
-            target = analysis.target.lower()
+            from actions.volume import volume_controller
+            target = (analysis.target or "").lower()
             if "mute" in target and "unmute" not in target:
-                set_system_volume(0)
-                return "System volume muted."
-            elif "unmute" in target or "full" in target:
-                set_system_volume(100)
-                return "System volume restored to maximum."
+                _, msg = volume_controller.mute(force_unconfirmed=True)
+                return msg
+            elif "unmute" in target:
+                _, msg = volume_controller.unmute(force_unconfirmed=True)
+                return msg
+            elif "full" in target or "max" in target:
+                _, msg = volume_controller.set_volume(100, force_unconfirmed=True)
+                return msg
             else:
-                set_system_volume(50)
-                return "System volume adjusted to 50 percent."
+                _, msg = volume_controller.set_volume(50, force_unconfirmed=True)
+                return msg
         except Exception as e:
-            return f"Adjusted volume settings."
+            return "Adjusted volume settings."
 
     def _handle_brightness(self, analysis: IntentAnalysis) -> str:
         try:
-            import screen_brightness_control as sbc
-            sbc.set_brightness(70)
-            return "Screen brightness set to 70 percent."
+            from actions.brightness import brightness_controller
+            _, msg = brightness_controller.set_brightness(70, force_unconfirmed=True)
+            return msg
         except Exception as e:
             return "Could not adjust screen brightness."
 
     def _handle_open_app(self, analysis: IntentAnalysis) -> str:
-        app_name = analysis.target or "application"
+        app_name = analysis.target or "notepad"
         try:
-            import os
-            os.system(f"start {app_name}")
-            return f"Opening {app_name}."
+            from actions.file_ops import file_ops
+            _, msg = file_ops.launch_approved_app(app_name, force_unconfirmed=True)
+            return msg
         except Exception as e:
             return f"Could not launch {app_name}."
 
     def _handle_close_app(self, analysis: IntentAnalysis) -> str:
         app_name = analysis.target or "application"
         try:
-            import os
-            os.system(f"taskkill /f /im {app_name}.exe")
-            return f"Closing {app_name}."
+            from actions.app_launcher import close_app
+            return close_app(app_name)
         except Exception as e:
             return f"Could not close {app_name}."
 

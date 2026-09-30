@@ -46,7 +46,7 @@ _TIER_DESCRIPTIONS: dict[PermissionTier, str] = {
 
 # Default tier assignments for well-known action names
 _DEFAULT_ACTION_TIERS: dict[str, PermissionTier] = {
-    # SAFE
+    # SAFE (Tier 0)
     "get_time":             PermissionTier.SAFE,
     "get_weather":          PermissionTier.SAFE,
     "calculate":            PermissionTier.SAFE,
@@ -54,7 +54,19 @@ _DEFAULT_ACTION_TIERS: dict[str, PermissionTier] = {
     "list_meetings":        PermissionTier.SAFE,
     "tell_joke":            PermissionTier.SAFE,
     "get_system_info":      PermissionTier.SAFE,
-    # READ
+    "get_brightness":       PermissionTier.SAFE,
+    "get_volume":           PermissionTier.SAFE,
+    "is_muted":             PermissionTier.SAFE,
+    "list_monitors":        PermissionTier.SAFE,
+    "media_play_pause":     PermissionTier.SAFE,
+    "media_next":           PermissionTier.SAFE,
+    "media_prev":           PermissionTier.SAFE,
+    "media_stop":           PermissionTier.SAFE,
+    "register_hotkey":      PermissionTier.SAFE,
+    "emergency_pause":      PermissionTier.SAFE,
+    "list_approved_apps":   PermissionTier.SAFE,
+    "generate_report":      PermissionTier.SAFE,
+    # READ (Tier 1)
     "read_clipboard":       PermissionTier.READ,
     "list_files":           PermissionTier.READ,
     "read_file":            PermissionTier.READ,
@@ -63,19 +75,38 @@ _DEFAULT_ACTION_TIERS: dict[str, PermissionTier] = {
     "list_tasks":           PermissionTier.READ,
     "read_preferences":     PermissionTier.READ,
     "screenshot":           PermissionTier.READ,
-    # WRITE
+    "chat_completion":      PermissionTier.READ,
+    "llm_query":            PermissionTier.READ,
+    "search_files":         PermissionTier.READ,
+    "show_metadata":        PermissionTier.READ,
+    "analyze_deletion_impact": PermissionTier.READ,
+    "get_startup_status":   PermissionTier.READ,
+    "code_review":          PermissionTier.READ,
+    "activity_track":       PermissionTier.READ,
+    # WRITE (Tier 2)
     "create_reminder":      PermissionTier.WRITE,
     "update_reminder":      PermissionTier.WRITE,
     "create_meeting":       PermissionTier.WRITE,
     "write_file":           PermissionTier.WRITE,
+    "apply_patch":          PermissionTier.WRITE,
+    "execute_test":         PermissionTier.WRITE,
+    "start_study_session":  PermissionTier.WRITE,
+    "end_study_session":    PermissionTier.WRITE,
     "send_email":           PermissionTier.WRITE,
     "set_brightness":       PermissionTier.WRITE,
     "set_volume":           PermissionTier.WRITE,
+    "mute_volume":          PermissionTier.WRITE,
+    "unmute_volume":        PermissionTier.WRITE,
+    "toggle_mute":          PermissionTier.WRITE,
+    "launch_app":           PermissionTier.WRITE,
+    "enable_startup":       PermissionTier.WRITE,
+    "disable_startup":      PermissionTier.WRITE,
     "write_clipboard":      PermissionTier.WRITE,
     "add_task":             PermissionTier.WRITE,
     "set_preference":       PermissionTier.WRITE,
     "run_macro":            PermissionTier.WRITE,
-    # DESTRUCTIVE
+    # DESTRUCTIVE (Tier 3)
+    "recycle_bin_move":     PermissionTier.DESTRUCTIVE,
     "delete_file":          PermissionTier.DESTRUCTIVE,
     "delete_reminder":      PermissionTier.DESTRUCTIVE,
     "delete_meeting":       PermissionTier.DESTRUCTIVE,
@@ -351,6 +382,20 @@ class PermissionBroker:
         key = f"{self._session_id}:{action_name}"
         with self._lock:
             return key in self._granted
+
+    def grant_session_action(self, action_name: str) -> None:
+        """Grant in-memory permission for a specific action for this session."""
+        key = f"{self._session_id}:{action_name}"
+        with self._lock:
+            self._granted.add(key)
+        logger.info("Granted in-memory session permission for action '%s'", action_name)
+
+    def revoke_session_action(self, action_name: str) -> None:
+        """Revoke in-memory permission for a specific action for this session."""
+        key = f"{self._session_id}:{action_name}"
+        with self._lock:
+            self._granted.discard(key)
+        logger.info("Revoked in-memory session permission for action '%s'", action_name)
 
     # ------------------------------------------------------------------
     # Audit emit

@@ -12,8 +12,8 @@ import actions.database as database
 
 logger = logging.getLogger("VoiceAssistant.Reminders")
 
-# OAuth Scopes
-SCOPES = ['https://www.googleapis.com/auth/calendar.events']
+from actions.google_services import SERVICE_SCOPES
+SCOPES = SERVICE_SCOPES['calendar']
 
 # File paths in project root
 CREDENTIALS_PATH = os.path.join(config.BASE_DIR, "credentials.json")

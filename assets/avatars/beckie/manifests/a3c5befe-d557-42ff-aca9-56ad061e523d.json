@@ -1,0 +1,41 @@
+{
+  "assetId": "a3c5befe-d557-42ff-aca9-56ad061e523d",
+  "sourceFile": "assets/avatars/beckie/source/corrupted_archangel_six_wings_boss.glb",
+  "runtimeFile": "assets/avatars/beckie/source/corrupted_archangel_six_wings_boss.glb",
+  "format": "glb",
+  "analyzedAt": "2026-09-29T06:01:27.430498+00:00",
+  "licenseNote": "user supplied local asset",
+  "meshCount": 21,
+  "triangleCount": 1963878,
+  "textureCount": 3,
+  "hasSkeleton": false,
+  "boneNames": [],
+  "animationClips": [],
+  "detectedCapabilities": {
+    "canIdle": true,
+    "canWalk": false,
+    "canRun": false,
+    "canFly": false,
+    "canHover": true,
+    "canTalk": false,
+    "canGesture": false,
+    "canUseWeapon": false
+  },
+  "detectedFeatures": {
+    "hasWings": false,
+    "wingBones": [],
+    "hasHandBones": false,
+    "leftHandBone": null,
+    "rightHandBone": null,
+    "hasWeaponLikeMesh": false,
+    "weaponMeshes": [],
+    "hasHeadBone": false,
+    "headBone": null,
+    "hasJawOrMouthBlendshape": false,
+    "morphTargets": []
+  },
+  "warnings": [
+    "This asset is not rigged. Beckie can use ambient motion only."
+  ],
+  "recommendedMode": "static"
+}

@@ -19,7 +19,7 @@ def lock_workstation() -> str:
         return "Failed to lock workstation."
 
 @profile
-def shutdown_system(delay_sec: int = 10) -> str:
+def shutdown_system(delay_sec: int = 5) -> str:
     """Schedules Windows shutdown."""
     try:
         os.system(f"shutdown /s /t {delay_sec}")
@@ -29,7 +29,7 @@ def shutdown_system(delay_sec: int = 10) -> str:
         return "Failed to initiate shutdown."
 
 @profile
-def restart_system(delay_sec: int = 10) -> str:
+def restart_system(delay_sec: int = 5) -> str:
     """Schedules Windows restart."""
     try:
         os.system(f"shutdown /r /t {delay_sec}")

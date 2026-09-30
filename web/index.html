@@ -101,6 +101,61 @@
                         <span class="metric-label">Server</span>
                         <span class="metric-value" id="uptime-value">Active</span>
                     </div>
+            <!-- Emotion Understanding & Adaptive Dialogue Card -->
+            <section class="glass-card emotion-card" id="emotion-section">
+                <div class="card-header">
+                    <h2>Emotion & Adaptive Dialogue</h2>
+                    <span class="badge" id="emotion-status-badge">Active</span>
+                </div>
+                <div class="emotion-controls-grid">
+                    <div class="toggle-group">
+                        <label class="switch-label">
+                            <span>Emotion Understanding</span>
+                            <input type="checkbox" id="toggle-emotion-enabled" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        <label class="switch-label">
+                            <span>Neutral Mode</span>
+                            <input type="checkbox" id="toggle-neutral-mode">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <!-- Current Emotion State Display -->
+                    <div class="emotion-meters" id="emotion-meters-container">
+                        <div class="meter-row">
+                            <span class="meter-label">Valence</span>
+                            <div class="meter-bar-bg">
+                                <div class="meter-bar-fill" id="meter-valence" style="width: 50%;"></div>
+                            </div>
+                            <span class="meter-num" id="val-valence">0.00</span>
+                        </div>
+                        <div class="meter-row">
+                            <span class="meter-label">Arousal</span>
+                            <div class="meter-bar-bg">
+                                <div class="meter-bar-fill" id="meter-arousal" style="width: 10%;"></div>
+                            </div>
+                            <span class="meter-num" id="val-arousal">0.10</span>
+                        </div>
+                        <div class="meter-row">
+                            <span class="meter-label">Dominance</span>
+                            <div class="meter-bar-bg">
+                                <div class="meter-bar-fill" id="meter-dominance" style="width: 50%;"></div>
+                            </div>
+                            <span class="meter-num" id="val-dominance">0.50</span>
+                        </div>
+                    </div>
+
+                    <!-- Adaptive Behavior Badges -->
+                    <div class="adaptation-badges">
+                        <span class="adaptive-pill" id="badge-tone">Tone: balanced</span>
+                        <span class="adaptive-pill" id="badge-challenge">Challenge: standard</span>
+                        <span class="adaptive-pill" id="badge-step">Steps: normal</span>
+                    </div>
+
+                    <div class="emotion-actions">
+                        <button class="danger-btn" id="btn-clear-emotion">Clear Emotion History</button>
+                    </div>
                 </div>
             </section>
         </main>

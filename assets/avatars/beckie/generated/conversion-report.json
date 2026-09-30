@@ -1,0 +1,14 @@
+{
+  "sourceFile": "assets/avatars/beckie/source/MidPoly.fbx",
+  "outputFile": "assets/avatars/beckie/generated/beckie-avatar.glb",
+  "convertedAt": "2026-09-29T06:53:22.801380+00:00",
+  "blenderVersion": null,
+  "success": true,
+  "warnings": [],
+  "meshCount": 1,
+  "triangleCount": 180,
+  "materialCount": 1,
+  "textureCount": 0,
+  "hasArmature": true,
+  "animationCount": 0
+}

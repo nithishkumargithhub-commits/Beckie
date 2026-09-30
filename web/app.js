@@ -206,9 +206,90 @@ document.addEventListener('DOMContentLoaded', () => {
         chatContainer.innerHTML = '<div class="chat-bubble assistant-bubble"><p>Log cleared.</p></div>';
     });
 
+    // Emotion Understanding & Privacy Controls
+    const toggleEmotion = document.getElementById('toggle-emotion-enabled');
+    const toggleNeutral = document.getElementById('toggle-neutral-mode');
+    const btnClearEmotion = document.getElementById('btn-clear-emotion');
+    const valValence = document.getElementById('val-valence');
+    const valArousal = document.getElementById('val-arousal');
+    const valDominance = document.getElementById('val-dominance');
+    const meterValence = document.getElementById('meter-valence');
+    const meterArousal = document.getElementById('meter-arousal');
+    const meterDominance = document.getElementById('meter-dominance');
+    const badgeTone = document.getElementById('badge-tone');
+    const badgeChallenge = document.getElementById('badge-challenge');
+    const badgeStep = document.getElementById('badge-step');
+    const emotionStatusBadge = document.getElementById('emotion-status-badge');
+
+    async function fetchEmotionState() {
+        try {
+            const res = await fetch('/api/emotion/state');
+            const data = await res.json();
+            if (data.status === 'success') {
+                const s = data.settings || {};
+                const e = data.current_emotion || {};
+                const a = data.current_adaptation || {};
+
+                if (toggleEmotion) toggleEmotion.checked = !!s.emotion_enabled;
+                if (toggleNeutral) toggleNeutral.checked = !!s.neutral_mode;
+                if (emotionStatusBadge) {
+                    emotionStatusBadge.textContent = s.emotion_enabled ? (s.neutral_mode ? 'Neutral' : 'Active') : 'Disabled';
+                }
+
+                if (valValence) valValence.textContent = (e.valence || 0).toFixed(2);
+                if (valArousal) valArousal.textContent = (e.arousal || 0).toFixed(2);
+                if (valDominance) valDominance.textContent = (e.dominance || 0.5).toFixed(2);
+
+                if (meterValence) meterValence.style.width = `${Math.round(((e.valence || 0) + 1.0) * 50)}%`;
+                if (meterArousal) meterArousal.style.width = `${Math.round((e.arousal || 0) * 100)}%`;
+                if (meterDominance) meterDominance.style.width = `${Math.round((e.dominance || 0.5) * 100)}%`;
+
+                if (badgeTone) badgeTone.textContent = `Tone: ${a.tone_style || 'balanced'}`;
+                if (badgeChallenge) badgeChallenge.textContent = `Challenge: ${a.challenge_level || 'standard'}`;
+                if (badgeStep) badgeStep.textContent = `Steps: ${a.step_size || 'normal'}`;
+            }
+        } catch (err) {}
+    }
+
+    if (toggleEmotion) {
+        toggleEmotion.addEventListener('change', async (e) => {
+            await fetch('/api/emotion/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ emotion_enabled: e.target.checked })
+            });
+            fetchEmotionState();
+            showToast(`Emotion engine ${e.target.checked ? 'enabled' : 'disabled'}`);
+        });
+    }
+
+    if (toggleNeutral) {
+        toggleNeutral.addEventListener('change', async (e) => {
+            await fetch('/api/emotion/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ neutral_mode: e.target.checked })
+            });
+            fetchEmotionState();
+            showToast(`Neutral mode ${e.target.checked ? 'activated' : 'deactivated'}`);
+        });
+    }
+
+    if (btnClearEmotion) {
+        btnClearEmotion.addEventListener('click', async () => {
+            if (confirm('Clear all local emotion tracking history?')) {
+                await fetch('/api/emotion/clear', { method: 'POST' });
+                fetchEmotionState();
+                showToast('Emotion history cleared');
+            }
+        });
+    }
+
     // Initial Load
     fetchReminders();
     fetchMetrics();
+    fetchEmotionState();
     setInterval(fetchMetrics, 5000);
+    setInterval(fetchEmotionState, 3000);
     connectWebSocket();
 });

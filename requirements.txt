@@ -35,6 +35,9 @@ google-api-python-client>=2.0.0
 google-auth-httplib2>=0.1.0
 google-auth-oauthlib>=1.0.0
 
+# ── Spotify ───────────────────────────────────────────────────────────────
+spotipy>=2.23.0
+
 # ── System & Windows ──────────────────────────────────────────────────────
 psutil>=5.9.0
 pywin32>=308
@@ -45,6 +48,7 @@ keyboard>=0.13.5
 pystray>=0.19.0
 pillow>=10.0.0
 customtkinter>=5.2.0
+watchdog>=4.0.0
 
 # ── Testing ───────────────────────────────────────────────────────────────
 pytest>=8.0.0

@@ -1,49 +1,35 @@
 """
 Offline Windows App Launcher Action.
-Execution latency: ~100ms
+Delegates to SafeFileOperations for whitelist verification, Tier 2 confirmation, and safe execution.
 """
 
-import os
+from __future__ import annotations
+
+import logging
+from typing import Optional
 from logger import profile, get_logger
+from actions.file_ops import file_ops, SafeFileOperations
 
 logger = get_logger("Jarvis.Actions.AppLauncher")
 
-# Common Windows App Path mappings
-APP_MAP = {
-    "chrome": "start chrome",
-    "google chrome": "start chrome",
-    "notepad": "start notepad",
-    "calculator": "start calc",
-    "calc": "start calc",
-    "explorer": "start explorer",
-    "file explorer": "start explorer",
-    "vscode": "code",
-    "vs code": "code",
-    "code": "code",
-    "spotify": "start spotify",
-    "cmd": "start cmd",
-    "command prompt": "start cmd",
-    "terminal": "start wt",
-}
 
 @profile
 def launch_app(app_name: str) -> str:
-    """Launches specified desktop application."""
-    clean_name = app_name.lower().strip()
-    cmd = APP_MAP.get(clean_name, f"start {clean_name}")
-    try:
-        os.system(cmd)
-        return f"Opening {app_name}."
-    except Exception as e:
-        logger.error(f"Error launching app '{app_name}': {e}")
-        return f"Could not launch {app_name}."
+    """Launches specified desktop application from approved whitelist."""
+    success, msg = file_ops.launch_approved_app(app_name)
+    return msg
+
 
 @profile
 def close_app(app_name: str) -> str:
-    """Closes specified desktop application."""
+    """Closes specified desktop application from approved whitelist."""
     clean_name = app_name.lower().strip().replace(".exe", "")
+    from actions.file_ops import APPROVED_APPS
+    if clean_name not in APPROVED_APPS:
+        return f"Application '{app_name}' is not in the approved whitelist."
     try:
-        os.system(f"taskkill /f /im {clean_name}.exe")
+        import subprocess
+        subprocess.run(["taskkill", "/f", "/im", f"{clean_name}.exe"], capture_output=True, shell=False)
         return f"Closed {app_name}."
     except Exception as e:
         logger.error(f"Error closing app '{app_name}': {e}")

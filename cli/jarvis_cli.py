@@ -22,6 +22,14 @@ import uuid
 from pathlib import Path
 from typing import Optional
 
+# Reconfigure stdout/stderr to UTF-8 on Windows consoles to prevent charmap errors
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 # Rich + Typer
 import typer
 from rich import print as rprint

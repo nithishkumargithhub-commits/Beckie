@@ -33,7 +33,7 @@ class JarvisOrchestrator:
     def start(self):
         """Starts Jarvis voice assistant background pipeline."""
         logger.info("Starting JARVIS Voice Assistant...")
-        self.tts.speak("Jarvis is online and ready.")
+        self.tts.speak("Hey, it's Beckie! How may I assist you?")
         self.wake_listener.start()
         
         # Keep main thread alive
@@ -52,7 +52,7 @@ class JarvisOrchestrator:
         logger.info("JARVIS stopped.")
 
     def _on_wake_word_triggered(self):
-        """Callback executed when wake word ('hey_jarvis') or Ctrl+Alt+J hotkey triggers."""
+        """Callback executed when wake word ('hey_beckie') or Ctrl+Alt+J hotkey triggers."""
         if self.state_machine.current_state != StateEnum.IDLE:
             logger.warning(f"Wake trigger ignored — assistant currently in state: {self.state_machine.current_state.value}")
             return

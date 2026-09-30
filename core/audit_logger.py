@@ -114,6 +114,8 @@ class AuditLogger:
                 "Audit queue full – dropping record: %s / %s", action_type, action_name
             )
 
+    log_action = log
+
     def log_permission(
         self,
         action_name: str,

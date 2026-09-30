@@ -1,0 +1,20 @@
+[package]
+name = "jarvis-hud"
+version = "2.0.0"
+description = "JARVIS 3D Iron Man HUD Desktop Frontend"
+authors = ["JARVIS Team"]
+edition = "2021"
+
+[dependencies]
+tauri = { version = "2.0.0", features = ["tray-icon"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+reqwest = { version = "0.12", features = ["json"] }
+sysinfo = "0.30"
+
+[build-dependencies]
+tauri-build = { version = "2.0.0", features = [] }
+
+[dev-dependencies]
+tokio-test = "0.4"

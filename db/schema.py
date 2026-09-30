@@ -263,6 +263,24 @@ CREATE INDEX IF NOT EXISTS idx_audit_session ON audit_logs(session_id);
 CREATE INDEX IF NOT EXISTS idx_audit_action  ON audit_logs(action_type, action_name);
 
 -- ─────────────────────────────────────────────────────────────────
+-- Permissions  (persisted approval records; cleared on full reset)
+-- ─────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS permissions (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id      TEXT    NOT NULL,
+    action_name     TEXT    NOT NULL,
+    tier            TEXT    NOT NULL,   -- safe | read | write | destructive
+    granted         INTEGER NOT NULL DEFAULT 1,
+    user_approved   INTEGER NOT NULL DEFAULT 0,
+    granted_at      TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+    expires_at      TEXT,               -- NULL = session-scoped only
+    revoked_at      TEXT,               -- NULL = still active
+    notes           TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_perm_session ON permissions(session_id, action_name);
+CREATE INDEX IF NOT EXISTS idx_perm_active  ON permissions(action_name, revoked_at);
+
+-- ─────────────────────────────────────────────────────────────────
 -- Conversation history  (rolling short-term memory)
 -- ─────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS conversation_history (
@@ -276,6 +294,61 @@ CREATE TABLE IF NOT EXISTS conversation_history (
 CREATE INDEX IF NOT EXISTS idx_conv_session ON conversation_history(session_id, created_at);
 
 -- ─────────────────────────────────────────────────────────────────
+-- Activity logs (active apps, domains, sessions - approved categories only)
+-- ─────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS activity_logs (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp       TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+    category        TEXT    NOT NULL,
+    app_name        TEXT    NOT NULL,
+    window_title    TEXT,
+    domain          TEXT,
+    duration_sec    REAL    NOT NULL DEFAULT 0.0,
+    session_id      TEXT,
+    details_json    TEXT    NOT NULL DEFAULT '{}'
+);
+CREATE INDEX IF NOT EXISTS idx_activity_ts ON activity_logs(timestamp);
+CREATE INDEX IF NOT EXISTS idx_activity_cat ON activity_logs(category);
+
+-- ─────────────────────────────────────────────────────────────────
+-- Study sessions
+-- ─────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS study_sessions (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id      TEXT    NOT NULL UNIQUE,
+    subject         TEXT    NOT NULL,
+    goal            TEXT,
+    start_time      TEXT    NOT NULL,
+    end_time        TEXT,
+    status          TEXT    NOT NULL DEFAULT 'active',
+    notes           TEXT,
+    duration_sec    REAL    NOT NULL DEFAULT 0.0
+);
+CREATE INDEX IF NOT EXISTS idx_study_status ON study_sessions(status);
+
+-- ─────────────────────────────────────────────────────────────────
+-- Emotion records (local-only, encrypted at rest)
+-- ─────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS emotion_records (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp       TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+    session_id      TEXT    NOT NULL,
+    turn_index      INTEGER NOT NULL DEFAULT 0,
+    valence         REAL    NOT NULL,
+    arousal         REAL    NOT NULL,
+    dominance       REAL    NOT NULL,
+    labels_json     TEXT    NOT NULL DEFAULT '[]',
+    confidence      REAL    NOT NULL DEFAULT 1.0,
+    tone_style      TEXT    NOT NULL DEFAULT 'balanced',
+    challenge_level TEXT    NOT NULL DEFAULT 'standard',
+    step_size       TEXT    NOT NULL DEFAULT 'normal',
+    is_neutral_mode INTEGER NOT NULL DEFAULT 0,
+    cloud_consent   INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_emotion_session ON emotion_records(session_id);
+CREATE INDEX IF NOT EXISTS idx_emotion_ts      ON emotion_records(timestamp);
+
+-- ─────────────────────────────────────────────────────────────────
 -- Schema version bookkeeping
 -- ─────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -285,7 +358,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
 );
 """
 
-CURRENT_SCHEMA_VERSION = 1
+CURRENT_SCHEMA_VERSION = 2
 
 
 def init_db(db_path: Path = DB_PATH) -> None:

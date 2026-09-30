@@ -30,7 +30,7 @@ if os.path.exists(env_path):
                 os.environ[key.strip()] = val.strip()
 
 # Dynamic Wake Word Settings
-WAKE_WORDS = [os.getenv("WAKE_WORD", "hey_jarvis")]
+WAKE_WORDS = [os.getenv("WAKE_WORD", "hey_beckie")]
 
 # Dynamic Threshold Settings
 try:
@@ -51,7 +51,7 @@ WHISPER_COMPUTE_TYPE = os.getenv("WHISPER_COMPUTE_TYPE", "int8")
 WHISPER_LANGUAGE = os.getenv("WHISPER_LANGUAGE", "en")
 
 # Gemini API Settings
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 
 # Security & API Settings
 JARVIS_API_KEY = os.getenv("JARVIS_API_KEY", "")

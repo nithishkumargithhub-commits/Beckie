@@ -1,0 +1,263 @@
+@import "tailwindcss";
+
+:root {
+  --bg-primary: #030716;
+  --bg-panel: rgba(6, 16, 40, 0.72);
+  --blue-primary: #1677FF;
+  --blue-bright: #00B8FF;
+  --blue-soft: #7AA8FF;
+  --red-primary: #FF314F;
+  --red-warning: #FF8A2A;
+  --red-critical: #FF1744;
+  --text-primary: #D7EEFF;
+  --text-muted: #6A92BA;
+  --grid-color: rgba(36, 123, 255, 0.13);
+
+  /* Mode dynamic theme defaults (Balanced) */
+  --theme-accent: #00B8FF;
+  --theme-bright: #60CDFF;
+  --theme-glow: rgba(0, 184, 255, 0.45);
+  --theme-border: rgba(22, 119, 255, 0.65);
+}
+
+/* 1. G-Mode / High Performance (Crimson Red Overdrive) */
+[data-mode="g-mode"] {
+  --theme-accent: #FF1744;
+  --theme-bright: #FF5252;
+  --theme-glow: rgba(255, 23, 68, 0.58);
+  --theme-border: rgba(255, 49, 79, 0.85);
+  --bg-panel: rgba(30, 4, 10, 0.82);
+  --grid-color: rgba(255, 23, 68, 0.20);
+}
+
+/* 2. Full Speed (Hyper Violet Overclock) */
+[data-mode="fullspeed"] {
+  --theme-accent: #D946EF;
+  --theme-bright: #F0ABFC;
+  --theme-glow: rgba(217, 70, 239, 0.55);
+  --theme-border: rgba(217, 70, 239, 0.85);
+  --bg-panel: rgba(25, 6, 32, 0.82);
+  --grid-color: rgba(217, 70, 239, 0.20);
+}
+
+/* 3. Performance (Electric Amber / Flame Orange) */
+[data-mode="performance"] {
+  --theme-accent: #FF8A2A;
+  --theme-bright: #FFB300;
+  --theme-glow: rgba(255, 138, 42, 0.52);
+  --theme-border: rgba(255, 138, 42, 0.85);
+  --bg-panel: rgba(28, 14, 5, 0.82);
+  --grid-color: rgba(255, 138, 42, 0.20);
+}
+
+/* 4. Quiet / Stealth (Cyber Emerald / Matrix Mint) */
+[data-mode="quiet"] {
+  --theme-accent: #00E676;
+  --theme-bright: #69F0AE;
+  --theme-glow: rgba(0, 230, 118, 0.52);
+  --theme-border: rgba(0, 230, 118, 0.85);
+  --bg-panel: rgba(4, 25, 14, 0.82);
+  --grid-color: rgba(0, 230, 118, 0.20);
+}
+
+/* 5. Cool (Glacier Arctic Cyan) */
+[data-mode="cool"] {
+  --theme-accent: #00F0FF;
+  --theme-bright: #70F7FF;
+  --theme-glow: rgba(0, 240, 255, 0.52);
+  --theme-border: rgba(0, 240, 255, 0.85);
+  --bg-panel: rgba(3, 22, 32, 0.82);
+  --grid-color: rgba(0, 240, 255, 0.20);
+}
+
+/* 6. Balanced (Classic Cobalt & Cyan) */
+[data-mode="balanced"] {
+  --theme-accent: #00B8FF;
+  --theme-bright: #60CDFF;
+  --theme-glow: rgba(0, 184, 255, 0.45);
+  --theme-border: rgba(22, 119, 255, 0.65);
+  --bg-panel: rgba(6, 16, 40, 0.82);
+  --grid-color: rgba(36, 123, 255, 0.15);
+}
+
+@layer base {
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+    transition: background-color 0.6s ease;
+  }
+
+  h1, h2, h3, .hud-title {
+    font-family: 'Orbitron', monospace;
+    letter-spacing: 0.08em;
+  }
+
+  .mono-val {
+    font-family: 'Share Tech Mono', monospace;
+  }
+}
+
+/* Hologram Glow Effects - Mode Adaptive with Fallbacks */
+.hud-glow {
+  box-shadow: 0 0 16px var(--theme-glow, rgba(22, 119, 255, 0.4)), inset 0 0 14px var(--theme-glow, rgba(0, 184, 255, 0.18));
+  border: 1px solid var(--theme-border, rgba(0, 184, 255, 0.5));
+  transition: all 0.5s ease;
+}
+
+.hud-glow-blue {
+  box-shadow: 0 0 16px rgba(0, 184, 255, 0.4), inset 0 0 14px rgba(22, 119, 255, 0.2);
+  border: 1px solid rgba(0, 184, 255, 0.55);
+}
+
+.hud-glow-red {
+  box-shadow: 0 0 22px rgba(255, 49, 79, 0.52), inset 0 0 16px rgba(255, 23, 68, 0.25);
+  border: 1px solid rgba(255, 49, 79, 0.75);
+}
+
+.hud-glow-amber {
+  box-shadow: 0 0 18px rgba(255, 138, 42, 0.48), inset 0 0 14px rgba(255, 138, 42, 0.2);
+  border: 1px solid rgba(255, 138, 42, 0.65);
+}
+
+.text-glow {
+  text-shadow: 0 0 8px rgba(0, 184, 255, 0.75), 0 0 20px rgba(22, 119, 255, 0.4);
+}
+
+.text-glow-red {
+  text-shadow: 0 0 8px rgba(255, 49, 79, 0.8), 0 0 18px rgba(255, 23, 68, 0.4);
+}
+
+.text-glow-amber {
+  text-shadow: 0 0 8px rgba(255, 138, 42, 0.75);
+}
+
+/* Hologram scanline effect */
+.scanlines {
+  background: linear-gradient(
+    rgba(3, 7, 22, 0) 50%, 
+    rgba(0, 184, 255, 0.025) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 49, 79, 0.015),
+    rgba(22, 119, 255, 0.008),
+    rgba(0, 184, 255, 0.015)
+  );
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Glassmorphism tactical panel with mode adaptive theming */
+.hud-panel {
+  background: var(--bg-panel);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--theme-border, rgba(22, 119, 255, 0.35));
+  box-shadow: 0 8px 32px 0 var(--theme-glow, rgba(0, 184, 255, 0.12));
+  transition: border-color 0.5s ease, box-shadow 0.5s ease, background-color 0.5s ease;
+}
+
+@keyframes modeAuraPulse {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.01); }
+}
+.mode-ambient-aura {
+  animation: modeAuraPulse 6s ease-in-out infinite;
+  transition: background 0.7s ease-in-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(3, 7, 22, 0.85);
+}
+::-webkit-scrollbar-thumb {
+  background: #1677FF;
+  border-radius: 2px;
+}
+
+/* Responsive Fixed HUD Grid Zones */
+.hud-zone-left-circle {
+  position: absolute;
+  left: 16%;
+  top: 43%;
+  width: 300px;
+  height: 300px;
+  transform: translate(-50%, -50%);
+  z-index: 15;
+}
+
+.hud-zone-center-core {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: 360px;
+  height: 360px;
+  transform: translate(-50%, -50%);
+  z-index: 15;
+}
+
+.hud-zone-right-circle {
+  position: absolute;
+  right: 16%;
+  top: 43%;
+  width: 300px;
+  height: 300px;
+  transform: translate(50%, -50%);
+  z-index: 15;
+}
+
+/* Responsive Scaling for Standard 1280x720 Displays */
+@media (max-width: 1366px) {
+  .hud-zone-left-circle {
+    left: 15%;
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+  .hud-zone-center-core {
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+  .hud-zone-right-circle {
+    right: 15%;
+    transform: translate(50%, -50%) scale(0.92);
+  }
+}
+
+@media (max-width: 1100px) {
+  .hud-zone-left-circle {
+    left: 14%;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  .hud-zone-center-core {
+    transform: translate(-50%, -50%) scale(0.85);
+  }
+  .hud-zone-right-circle {
+    right: 14%;
+    transform: translate(50%, -50%) scale(0.8);
+  }
+}
+
+/* Mobile & narrow fallback: stack modules vertically */
+@media (max-width: 800px) {
+  .hud-zone-left-circle,
+  .hud-zone-center-core,
+  .hud-zone-right-circle {
+    position: relative;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
+    margin: 16px auto;
+  }
+}
+
+/* Reduced Motion Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

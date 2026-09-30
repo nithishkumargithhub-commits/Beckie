@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Beckie – Jarvis Bridge</title>
+  <style>
+    body { font-family: sans-serif; width: 320px; padding: 12px; background: #1a1a2e; color: #eee; }
+    h2 { margin: 0 0 8px; font-size: 15px; color: #a78bfa; }
+    .status { font-size: 11px; color: #888; margin-bottom: 12px; }
+    .domain-row { display: flex; align-items: center; justify-content: space-between;
+                  background: #16213e; border-radius: 6px; padding: 6px 10px; margin-bottom: 6px; }
+    .domain-name { font-size: 12px; word-break: break-all; }
+    .revoke-btn { font-size: 11px; background: #7c3aed; border: none; color: white;
+                  border-radius: 4px; padding: 2px 8px; cursor: pointer; }
+    .revoke-btn:hover { background: #5b21b6; }
+    .approve-btn { width: 100%; padding: 8px; background: #7c3aed; border: none;
+                   color: white; border-radius: 6px; cursor: pointer; font-size: 13px; margin-top: 8px; }
+    .approve-btn:hover { background: #5b21b6; }
+    .empty { font-size: 12px; color: #555; text-align: center; padding: 12px 0; }
+    #current-domain { font-size: 11px; color: #a78bfa; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <h2>🤖 Beckie – Domain Access</h2>
+  <div id="current-domain">Loading…</div>
+  <div class="status">Domains below have been granted read access to their page content.</div>
+  <div id="domain-list"></div>
+  <button class="approve-btn" id="approve-btn">Grant access to current domain</button>
+  <script src="popup.js"></script>
+</body>
+</html>

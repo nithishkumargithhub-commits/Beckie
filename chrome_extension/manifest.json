@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Beckie – Jarvis Bridge",
+  "version": "1.0.0",
+  "description": "Native messaging bridge between Beckie (Jarvis) and Chrome. Requires per-domain approval before accessing page content.",
+
+  "permissions": [
+    "nativeMessaging",
+    "activeTab",
+    "storage"
+  ],
+
+  "host_permissions": [],
+
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Beckie",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "content_scripts": [],
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "native_messaging_hosts": {
+    "com.beckie.jarvis": {}
+  }
+}

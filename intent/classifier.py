@@ -148,19 +148,38 @@ class IntentClassifier:
                         
             clean_schema(schema_dict)
 
-            # Call Gemini generate_content with Structured Output schema
-            response = self.client.models.generate_content(
-                model=config.GEMINI_MODEL,
-                contents=prompt,
-                config={
-                    "response_mime_type": "application/json",
-                    "response_schema": schema_dict
-                }
-            )
+            candidate_models = [config.GEMINI_MODEL]
+            for m in ['gemini-3.8-flash', 'gemini-3.1-flash-lite-preview', 'gemini-3.5-flash']:
+                if m not in candidate_models:
+                    candidate_models.append(m)
+
+            response = None
+            last_err = None
+            used_model = config.GEMINI_MODEL
+
+            for m_name in candidate_models:
+                try:
+                    response = self.client.models.generate_content(
+                        model=m_name,
+                        contents=prompt,
+                        config={
+                            "response_mime_type": "application/json",
+                            "response_schema": schema_dict
+                        }
+                    )
+                    if response and response.text:
+                        used_model = m_name
+                        break
+                except Exception as ex:
+                    last_err = ex
+                    logger.warning(f"Gemini model {m_name} transient error: {ex}. Trying next candidate...")
+
+            if not response or not response.text:
+                raise last_err or RuntimeError("All candidate Gemini models failed to generate content.")
 
             # Parse JSON response text back into Pydantic model
             result = IntentAnalysis.model_validate_json(response.text)
-            logger.info(f"Successfully parsed intent: {result}")
+            logger.info(f"Successfully parsed intent using {used_model}: {result}")
             return result
 
         except Exception as e:
